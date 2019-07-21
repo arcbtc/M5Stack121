@@ -11,6 +11,8 @@ https://www.amazon.com/dp/B06XHJ2PBJ/ref=cm_sw_r_tw_dp_U_x_tEjnDbC137QVX
 An opennnode account can be setup here
 https://opennode.co/join/f774f2a0-1377-45e2-b719-6b821f24900d
 
+#Installing arduino + libraries
+
 Install the Arduino IDE,<br>
 https://www.arduino.cc/en/Main/Software
 
