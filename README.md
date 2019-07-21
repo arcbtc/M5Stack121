@@ -20,6 +20,9 @@ From "Manage Libraries" install,<br>
 - ArduinoJson
 - M5Stack
 
+![a](https://i.imgur.com/mCfnhZN.png)
+
+# Wiring
 ![bitcoin m5stack](https://i.imgur.com/1lZt4ST.jpg)
 
 ![mstack wires](https://i.imgur.com/Zd5Rs4O.jpg)
