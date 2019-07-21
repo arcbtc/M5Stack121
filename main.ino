@@ -1,23 +1,23 @@
-#include "Image.c"
+#include "Image.c" //calls opennode logo
+
 #include <M5Stack.h> 
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h> 
 
+//enter your wifi details
 char wifiSSID[] = "YOUR-WIFI";
 char wifiPASS[] = "YOUR-WIFI-PASS";
-
 
 const char* host = "api.opennode.co";
 const int httpsPort = 443;
 String amount = "1";
 String apikey = "YOUR-OPENNODE-INVOICE-API-KEY"; 
-String description = "onarcade";
+String description = "SOME-INVOICE-DESCRIPTION";
 String data_lightning_invoice_payreq;
 String data_id;
 String data_status = "unpaid";
 int counta = 0;
 String hints = "false"; 
-
 
 void setup() {
   M5.begin();
@@ -118,17 +118,14 @@ void checkpayment(String PAYID){
 
   String url = "/v1/charge/" + PAYID;
 
-
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
                "Authorization: " + apikey + "\r\n" +
                "User-Agent: ESP32\r\n" +
                "Connection: close\r\n\r\n");
 
-
   while (client.connected()) {
 
-    
     String line = client.readStringUntil('\n');
     if (line == "\r") {
       break;
