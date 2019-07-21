@@ -3,7 +3,7 @@ M5Stack 121, powered by opennode.
 
 A super easy implimentation of a 121 bitcoin lightning network point of sale, using an ESP32 based M5Stack.
 
-Can turn any low-powered device on after an invoice has been paid. Higher voltage relays could be used for higher voltage devices.
+Can turn any low-powered device on after a bitcoin lightning network invoice has been paid. Higher voltage relays could be used for higher voltage devices.
 
 https://www.aliexpress.com/af/m5stack.html
 https://www.amazon.com/dp/B06XHJ2PBJ/ref=cm_sw_r_tw_dp_U_x_tEjnDbC137QVX
