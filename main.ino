@@ -49,7 +49,7 @@ void loop() {
       counta++;
     }
     else{     
-      M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)Image_map);
+      M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)Thumbsup1_map);
       digitalWrite(21, HIGH);
       delay(300);
       digitalWrite(21, LOW);
