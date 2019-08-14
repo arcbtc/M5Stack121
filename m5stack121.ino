@@ -1,4 +1,5 @@
 #include "Image.c" //calls opennode logo
+#include "Thumbsup1.c"//calls thumbs up image
 
 #include <M5Stack.h> 
 #include <WiFiClientSecure.h>
