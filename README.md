@@ -1,11 +1,10 @@
-# M5Stack121
-M5Stack 121, powered by opennode.
+# M5Stack1.21
+A simple PoS unit for retrofitting any device to accept bitcoin over lightning network.
 
 [![video demo](https://i.imgur.com/H8N0Lsr.png)](https://www.youtube.com/watch?v=3J7pTht4Ig8)
 
-A super easy implimentation of a 121 bitcoin lightning network point of sale, using an ESP32 based M5Stack.
-
-Can turn any low-powered device on after a bitcoin lightning network invoice has been paid. Higher voltage relays could be used for higher voltage devices.
+There are x2 versions of the module, one using OpenNode (M5Stack121ON) and the other using a LND node (M5Stack121BLITZ)
+# Hardware
 
 https://www.aliexpress.com/af/m5stack.html
 https://www.amazon.com/dp/B06XHJ2PBJ/ref=cm_sw_r_tw_dp_U_x_tEjnDbC137QVX
@@ -13,7 +12,7 @@ https://www.amazon.com/dp/B06XHJ2PBJ/ref=cm_sw_r_tw_dp_U_x_tEjnDbC137QVX
 An opennnode account can be setup here
 https://opennode.co/join/f774f2a0-1377-45e2-b719-6b821f24900d
 
-#Installing arduino + libraries
+# Installing arduino + libraries
 
 Install the Arduino IDE,<br>
 https://www.arduino.cc/en/Main/Software
