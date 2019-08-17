@@ -28,8 +28,6 @@ void setup() {
   }
   
   pinMode(21, OUTPUT);
-  pinMode(16, OUTPUT);
-  digitalWrite(16, HIGH);
 }
 
 void loop() {
