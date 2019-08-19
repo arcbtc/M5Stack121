@@ -27,6 +27,14 @@ From "Manage Libraries" install,<br>
 
 ![a](https://i.imgur.com/mCfnhZN.png)
 
+# M5StackSatsBLITZ
+
+[![bitcoinpos](https://i.imgur.com/0SV55GO.png)](https://www.youtube.com/watch?v=UJuCWnz2osE)
+
+# M5StackSatsON
+
+[![bitcoinpos](https://i.imgur.com/rNvyXhO.png)](https://www.youtube.com/watch?v=qUwff6IELck)
+
 # Wiring
 ![bitcoin m5stack](https://i.imgur.com/1lZt4ST.jpg)
 
