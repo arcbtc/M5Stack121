@@ -8,14 +8,17 @@
 char wifiSSID[] = "YOUR-WIFI";
 char wifiPASS[] = "YOUR-WIFI-PASSWORD";
 
+
 //BLITZ DETAILS
-const char*  server = "room77.raspiblitz.com"; //LAN ip could be used if on the same network
-const int httpsPort = 443; // standard ssl port
-String blitzport = ":8080"; //standard LND rest api port
+const char*  server = "room77.raspiblitz.com"; 
+const int httpsPort = 443;
+const int lndport = 8080;
+String pubkey;
+String totcapacity;
 
 String readmacaroon = "YOUR-LND-READ-MACAROON";
 String invoicemacaroon = "YOUR-LND-INVOICE-MACAROON";
-const char* test_root_ca =   //SSL must be in this format, SSL for the node can be exported from yournode.com:8077 in firefox
+const char* test_root_ca =   //SSL must be in this format, SSL for the node can be exported from yournode.com:8080 in firefox
      "-----BEGIN CERTIFICATE-----\n" \
     "MIICBTCCAaqgAwIBAgIQBSMZ9g3niBo1jyzK1DvECDAKBggqhkjOPQQDAjAyMR8w\n" \
     "HQYDVQQKExZsbmQgYXV0b2dlbmVyYXRlZCBjZXJ0MQ8wDQYDVQQDEwZSb29tNzcw\n" \
@@ -29,7 +32,6 @@ const char* test_root_ca =   //SSL must be in this format, SSL for the node can 
     "AAAwCgYIKoZIzj0EAwIDSQAwRgIhALKz3oScii3i+5ltMVQc9u2O38rgfnGCj5Lh\n" \
     "u9iwcAiZAiEA0BjRcisPUlG+SE/s+x6/A2NuT0gtIZ3PKd/GuM5T0jM=\n" \
     "-----END CERTIFICATE-----\n";
-
 
 String invoiceamount = "200";
 bool settle = false;
@@ -45,6 +47,8 @@ void setup() {
   }
   
   pinMode(21, OUTPUT);
+     
+     nodecheck();
 }
 
 void loop() {
@@ -74,29 +78,27 @@ void loop() {
       counta = 1000;
     }  
   }
-
+  nodecheck();
 }
 
 ////////////////////////// GET/POST REQUESTS///////////////////////////////
 
 void reqinvoice(String value){
 
-  String memo = "Room77-";
-  
    WiFiClientSecure client;
 
   client.setCACert(test_root_ca);
 
   Serial.println("\nStarting connection to server...");
-  if (!client.connect(server, 8077))
-    Serial.println("Connection failed!");
-  else {
-    Serial.println("Connected to server!");
+  if (!client.connect(server, lndport)){
+      return;   
+  }
+
     
-   String topost = "{\"value\": \""+ value +"\", \"memo\": \""+ memo + String(random(1,1000)) +"\", \"expiry\": \"1000\"}";
+   String topost = "{\"value\": \""+ value +"\", \"memo\": \""+ memo + String(fiat) + on_sub_currency + " (" + String(random(1,1000)) + ")" +"\", \"expiry\": \"1000\"}";
   
-       client.print(String("POST ")+ "https://" + server + blitzport + "/v1/invoices HTTP/1.1\r\n" +
-                 "Host: "  + server + blitzport +"\r\n" +
+       client.print(String("POST ")+ "https://" + server + ":" + String(lndport) + "/v1/invoices HTTP/1.1\r\n" +
+                 "Host: "  + server +":"+ String(lndport) +"\r\n" +
                  "User-Agent: ESP322\r\n" +
                  "Grpc-Metadata-macaroon:" + invoicemacaroon + "\r\n" +
                  "Content-Type: application/json\r\n" +
@@ -108,13 +110,13 @@ void reqinvoice(String value){
     while (client.connected()) {
       String line = client.readStringUntil('\n');
       if (line == "\r") {
-        Serial.println("headers received"); 
+       
         break;
       }
     }
     
     String content = client.readStringUntil('\n');
-    Serial.println(content);
+  
 
     client.stop();
     
@@ -129,7 +131,7 @@ void reqinvoice(String value){
     payreq = payment_request;
  
 }
-}
+
 
 
 void gethash(String xxx){
@@ -139,13 +141,13 @@ void gethash(String xxx){
   client.setCACert(test_root_ca);
 
   Serial.println("\nStarting connection to server...");
-  if (!client.connect(server, 8077))
-    Serial.println("Connection failed!");
-  else {
-    Serial.println("Connected to server!");
+  if (!client.connect(server, lndport)){
+       return;
+  }
+   
 
-       client.println(String("GET ") + "https://" + server + blitzport + "/v1/payreq/"+ xxx +" HTTP/1.1\r\n" +
-                 "Host: "  + server + blitzport +"\r\n" +
+       client.println(String("GET ") + "https://" + server +":"+ String(lndport) + "/v1/payreq/"+ xxx +" HTTP/1.1\r\n" +
+                 "Host: "  + server +":"+ String(lndport) +"\r\n" +
                  "Grpc-Metadata-macaroon:" + readmacaroon + "\r\n" +
                  "Content-Type: application/json\r\n" +
                  "Connection: close");
@@ -155,15 +157,13 @@ void gethash(String xxx){
     while (client.connected()) {
       String line = client.readStringUntil('\n');
       if (line == "\r") {
-        Serial.println("headers received"); 
+       
         break;
       }
     }
     
 
     String content = client.readStringUntil('\n');
-    Serial.println(content);
-
 
     client.stop();
 
@@ -175,7 +175,7 @@ void gethash(String xxx){
     const char* payment_hash = doc["payment_hash"]; 
     hash = payment_hash;
 }
-}
+
 
 void checkpayment(String xxx){
   
@@ -184,13 +184,12 @@ void checkpayment(String xxx){
   client.setCACert(test_root_ca);
 
   Serial.println("\nStarting connection to server...");
-  if (!client.connect(server, 8077))
-    Serial.println("Connection failed!");
-  else {
-    Serial.println("Connected to server!");
+  if (!client.connect(server, lndport)){
+       return;
+  }
 
-       client.println(String("GET ") + "https://" + server + blitzport + "/v1/invoice/"+ xxx +" HTTP/1.1\r\n" +
-                 "Host: "  + server + blitzport +"\r\n" +
+       client.println(String("GET ") + "https://" + server +":"+ String(lndport) + "/v1/invoice/"+ xxx +" HTTP/1.1\r\n" +
+                 "Host: "  + server +":"+ String(lndport) +"\r\n" +
                  "Grpc-Metadata-macaroon:" + readmacaroon + "\r\n" +
                  "Content-Type: application/json\r\n" +
                  "Connection: close");
@@ -200,14 +199,13 @@ void checkpayment(String xxx){
     while (client.connected()) {
       String line = client.readStringUntil('\n');
       if (line == "\r") {
-        Serial.println("headers received"); 
+
         break;
       }
     }
     
 
     String content = client.readStringUntil('\n');
-    Serial.println(content);
 
     client.stop();
     
@@ -220,7 +218,6 @@ void checkpayment(String xxx){
     
   
 }
-}
 
 
 void page_qrdisplay(String xxx)
@@ -230,4 +227,24 @@ void page_qrdisplay(String xxx)
   M5.Lcd.qrcode(payreq,45,0,240,10);
   delay(100);
 
+}
+void nodecheck(){
+  bool checker = false;
+  while(!checker){
+  WiFiClientSecure client;
+   client.setCACert(test_root_ca);
+  if (!client.connect(server, lndport)){
+
+    M5.Lcd.fillScreen(BLACK);
+     M5.Lcd.setCursor(20, 80);
+     M5.Lcd.setTextSize(3);
+     M5.Lcd.setTextColor(TFT_RED);
+     M5.Lcd.println("NO NODE DETECTED");
+     delay(1000);
+  }
+  else{
+    checker = true;
+  }
+  }
+  
 }
