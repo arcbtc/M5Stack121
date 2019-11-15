@@ -44,3 +44,8 @@ From "Manage Libraries" install,<br>
 ![relay wires](https://i.imgur.com/DzGBKf5.jpg)
 
 ![switch wires](https://i.imgur.com/zBwMcQr.jpg)
+
+# Tip me
+If you like this project and might even use or extend it, why not send some tip love!
+https://paywall.link/to/f4e4e
+
