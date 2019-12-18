@@ -10,7 +10,7 @@ char wifiPASS[] = "YOUR-WIFI-PASS";
 
 //LNBITS DETAILS
 int httpsPort = 443;
-const char* lnbitshost = "lnbits.com"; //change if self-hosting
+const char* lnbitshost = "lnbits.com"; //change if using a different LNbits instance
 String invoicekey = "YOUR-LNBITS-WALLET-INVOICE-KEY"; 
 
 String amount = "100";
