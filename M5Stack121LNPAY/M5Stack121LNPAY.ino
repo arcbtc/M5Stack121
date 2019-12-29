@@ -12,16 +12,14 @@
 #include <HTTPClient.h>
 
 
-#define KEYBOARD_I2C_ADDR     0X08
-#define KEYBOARD_INT          5
-
-//WIFI Setup
+///WIFI Setup
 char wifiSSID[] = "<your_wifi_ssid>";
 char wifiPASS[] = "<your_wifi_pass>";
 
 //API Setup
 String api_key = "<api_key_goes_here>"; // Can be found here: https://lnpay.co/dashboard/integrations
 String wallet_key = "<wi_XXXXX_key_goes_here>"; // Can be found here: https://lnpay.co/dashboard/advanced-wallets
+
 
 //Payment Setup
 String memo = "M5 "; //memo suffix, followed by a random number
@@ -35,7 +33,6 @@ String invoice_check_endpoint = "/user/lntx/"; //append LNTX ID to the end (e.g.
 
 String lntx_id;
 String choice = "";
-String on_sub_currency = on_currency.substring(3);
 
 String key_val;
 String cntr = "0";
@@ -53,7 +50,6 @@ String payreq = "";
 void setup() {
   M5.begin();
   M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)PAYWSplash_map);
-  Wire.begin();
 
   //connect to local wifi            
   WiFi.begin(wifiSSID, wifiPASS);   
@@ -69,25 +65,33 @@ void setup() {
     delay(1000);
     i++;
   }
- 
-  pinMode(KEYBOARD_INT, INPUT_PULLUP);
-  on_rates();
- 
+  pinMode(21, OUTPUT);
+  digitalWrite(21, LOW);
+  
 }
 
 void loop() {
-  page_input();
-  cntr = "1";
-  while (cntr == "1"){
-    M5.update();
-      page_processing();
-      reqinvoice(nosats);
-      page_qrdisplay(payreq);
-      checkpaid();
-      key_val = "";
-      inputs = "";
-    } 
+ 
+ page_processing();
+ reqinvoice(nosats);
+ page_qrdisplay(payreq);
+ checkpayment();
+ int counta = 0;
+ while (settle != true){
+   checkpayment();
+   key_val = "";
+   inputs = "";
+   if(counta >200){
+    settle = true;
+   }
+   counta++;
+   delay(1000);
+  } 
+  digitalWrite(21, HIGH);
+  delay(10000);
+  digitalWrite(21, LOW);
 }
+
 
 /**
  * Request an invoice
@@ -124,29 +128,6 @@ void reqinvoice(String value){
   lntx_id = (String) id;
   Serial.println(payreq);
   Serial.println(lntx_id);
-}
-
-
-void checkpaid(){
-
-     int counta = 0;
-     int tempi = 0;
-     settle = false;
-
-     while (tempi == 0){
-       checkpayment();
-       if (settle == false){
-          counta ++;
-          Serial.print(counta);
-          if (counta == 100) {
-           tempi = 1;
-          }
-       } 
-       else{
-         tempi = 1;
-       }
-         
-     }
 }
 
 
@@ -197,4 +178,3 @@ void page_processing()
   M5.Lcd.setTextColor(TFT_WHITE);
   M5.Lcd.println("PROCESSING");
 }
-
