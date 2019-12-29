@@ -1,4 +1,4 @@
-# LNPay M5StackSats
+# LNPay M5Stack121
 
 ### Step 1: WiFi Configuration
 
