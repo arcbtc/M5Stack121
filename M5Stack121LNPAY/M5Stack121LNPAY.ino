@@ -25,7 +25,7 @@ String wallet_key = "<wi_XXXXX_key_goes_here>"; // Can be found here: https://ln
 
 //Payment Setup
 String memo = "M5 "; //memo suffix, followed by a random number
-String on_currency = "BTCUSD"; //currency can be changed here ie BTCUSD BTCGBP etc
+String nosats = "50";
 
 //Endpoint setup
 const char* api_endpoint = "https://lnpay.co/v1";
@@ -45,7 +45,6 @@ int keyssdec;
 float temp;  
 String fiat;
 float satoshis;
-String nosats = "";
 float conversion;
 bool settle = false;
 String payreq = "";
@@ -81,79 +80,13 @@ void loop() {
   cntr = "1";
   while (cntr == "1"){
     M5.update();
-    get_keypad(); 
-
-    if (M5.BtnC.wasReleased()) {
       page_processing();
       reqinvoice(nosats);
       page_qrdisplay(payreq);
       checkpaid();
       key_val = "";
       inputs = "";
-    } else if (M5.BtnB.wasReleased()) {
-      page_processing();
-      nosats = "0";
-      reqinvoice(nosats);
-      page_qrdisplay(payreq);
-      checkpaid();
-      key_val = "";
-      inputs = "";
-    } else if (M5.BtnA.wasReleased()) {
-      M5.Lcd.fillScreen(BLACK);
-      M5.Lcd.setCursor(0, 0);
-      M5.Lcd.setTextColor(TFT_WHITE);
-      page_input();
-      key_val = "";
-      inputs = "";  
-      nosats = "";
-    }
-    
-    Serial.print(key_val);
-    inputs += key_val;
-    temp = inputs.toInt();
-    temp = temp / 100;
-    fiat = temp;
-    satoshis = temp/conversion;
-    int intsats = (int) round(satoshis*100000000.0);
-
-    nosats = String(intsats);
-    M5.Lcd.setTextSize(3);
-    M5.Lcd.setTextColor(TFT_RED, TFT_BLACK);
-    M5.Lcd.setCursor(70, 88);
-    M5.Lcd.println(fiat);
-    M5.Lcd.setTextColor(TFT_GREEN, TFT_BLACK);
-    M5.Lcd.setCursor(87, 136);
-    M5.Lcd.println(nosats);
-
-    delay(100);
-    key_val = "";
-  }
-}
-
-
-
-//OPENNODE REQUESTS
-void on_rates(){
-    String payload;
-    HTTPClient http;
-    http.begin("https://api.opennode.co/v1/rates"); //Specify the URL
-    int httpCode = http.GET(); //Make the request
-    
-    if (httpCode > 0) { //Check for the returning code
-        payload = http.getString();
-        Serial.println(payload);
-      }
-    else {
-      Serial.println("Error on HTTP request");
-    }
-    http.end(); //Free the resources
-    
-    const size_t capacity = 169*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(168) + 3800;
-    DynamicJsonDocument doc(capacity);
-    deserializeJson(doc, payload);
-    conversion = doc["data"][on_currency][on_currency.substring(3)]; 
-    Serial.println(conversion);
-
+    } 
 }
 
 /**
@@ -208,39 +141,12 @@ void checkpaid(){
           if (counta == 100) {
            tempi = 1;
           }
-       } else {
-        tempi = 1;
-        M5.Lcd.fillScreen(BLACK);
-        M5.Lcd.setCursor(60, 80);
-        M5.Lcd.setTextSize(4);
-        M5.Lcd.setTextColor(TFT_GREEN);
-        M5.Lcd.println("COMPLETE");
-        delay(1000);
-        
-        cntr = "2";
-      }
-      
-     int bee = 0;
-     while ((bee < 120) && (tempi==0)) {
-        M5.update();
-        if (M5.BtnA.wasReleased()) {
-          tempi = -1;
-        
-          M5.Lcd.fillScreen(BLACK);
-          M5.Lcd.setCursor(50, 80);
-          M5.Lcd.setTextSize(4);
-          M5.Lcd.setTextColor(TFT_RED);
-          M5.Lcd.println("CANCELLED");
-          delay(1000);
-          cntr = "2";
-        }
-        
-        delay(10);
-        bee++;
-        key_val = "";
-        inputs = "";
+       } 
+       else{
+         tempi = 1;
+       }
+         
      }
-   }
 }
 
 
@@ -282,23 +188,6 @@ void page_qrdisplay(String xxx)
   delay(100);
 }
 
-void page_input()
-{
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setTextColor(TFT_WHITE);
-  M5.Lcd.setTextSize(3);
-  M5.Lcd.setCursor(0, 40);
-  M5.Lcd.println("Amount then C");
-  M5.Lcd.println("");
-  M5.Lcd.println(on_currency.substring(3) + ": ");
-  M5.Lcd.println("");
-  M5.Lcd.println("SATS: ");
-  M5.Lcd.println("");
-  M5.Lcd.println("");
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(50, 200);
-  M5.Lcd.println("TO RESET PRESS A");
-}
 
 void page_processing()
 { 
@@ -309,23 +198,3 @@ void page_processing()
   M5.Lcd.println("PROCESSING");
 }
 
-void get_keypad(){
-   if(digitalRead(KEYBOARD_INT) == LOW) {
-    Wire.requestFrom(KEYBOARD_I2C_ADDR, 1);  // request 1 byte from keyboard
-    while (Wire.available()) { 
-       uint8_t key = Wire.read();                  // receive a byte as character
-       key_val = key;
-
-       if(key != 0) {
-        if(key >= 0x20 && key < 0x7F) { // ASCII String
-          if (isdigit((char)key)){
-          key_val = ((char)key);
-          }
-          else {
-          key_val = "";
-        } 
-        }
-      }
-    }
-  }
-}
