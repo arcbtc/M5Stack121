@@ -1,5 +1,5 @@
 /**
- *  M5StackSatsLNPAY
+ *  M5Stack121LNPAY
  */
 
 #include "LNPAYSplash.c"
