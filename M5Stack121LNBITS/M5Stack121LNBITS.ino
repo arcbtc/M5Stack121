@@ -13,12 +13,12 @@
 
 
 //WIFI Setup
-char wifiSSID[] = "36C3-insecure";
-char wifiPASS[] = "";
+char wifiSSID[] = "<your_wifi_ssid>";
+char wifiPASS[] = "<your_wifi_pass>";
 
 //API Setup
-String api_key = "3zB1DPk2bFwiocmjOasLJA4Tpfc2jUDB"; // Can be found here: https://lnpay.co/dashboard/integrations
-String wallet_key = "wi_c1PK81mbxWeSGHGug0MzN39d"; // Can be found here: https://lnpay.co/dashboard/advanced-wallets
+String api_key = "<api_key_goes_here>"; // Can be found here: https://lnpay.co/dashboard/integrations
+String wallet_key = "<wi_XXXXX_key_goes_here>"; // Can be found here: https://lnpay.co/dashboard/advanced-wallets
 
 //Payment Setup
 String memo = "M5 "; //memo suffix, followed by a random number
