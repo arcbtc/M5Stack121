@@ -1,179 +1,166 @@
-/**
- *  M5Stack121LNPAY
- */
+#include "Image.c" //calls opennode logo
 
-#include "LNPAYSplash.c"
 #include <M5Stack.h> 
-#include <string.h>
-#include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
-#include <math.h>
+#include <ArduinoJson.h> 
 
-#include <HTTPClient.h>
+//enter your wifi details
+char wifiSSID[] = "YOUR-SSID";
+char wifiPASS[] = "YOUR-PASS";
 
+//LNBITS DETAILS
+int httpsPort = 443;
+const char* lnbitshost = "lnbits.com"; //change if using a different LNbits instance
+String invoicekey = "YOUR-API-KEY"; 
 
-//WIFI Setup
-char wifiSSID[] = "<your_wifi_ssid>";
-char wifiPASS[] = "<your_wifi_pass>";
+String amount = "100";
 
-//API Setup
-String api_key = "<api_key_goes_here>"; // Can be found here: https://lnpay.co/dashboard/integrations
-String wallet_key = "<wi_XXXXX_key_goes_here>"; // Can be found here: https://lnpay.co/dashboard/advanced-wallets
-
-//Payment Setup
-String memo = "M5 "; //memo suffix, followed by a random number
-String nosats = "50";
-
-//Endpoint setup
-const char* api_endpoint = "https://lnpay.co/v1";
-String invoice_create_endpoint = "/user/wallet/" + wallet_key + "/invoice";
-String invoice_check_endpoint = "/user/lntx/"; //append LNTX ID to the end (e.g. /user/lntx/lntx_mfEKSse22)
-
-
-String lntx_id;
-String choice = "";
-
-String key_val;
-String cntr = "0";
-String inputs = "";
-int keysdec;
-int keyssdec;
-float temp;  
-String fiat;
-float satoshis;
-float conversion;
-bool settle = false;
-String payreq = "";
-
+String description = "Arcade";
+String data_lightning_invoice_payreq;
+String data_id;
+String data_status = "unpaid";
+int counta = 0;
+String hints = "false"; 
+String payreq;
 
 void setup() {
   M5.begin();
-  M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)PAYWSplash_map);
-
-  //connect to local wifi            
-  WiFi.begin(wifiSSID, wifiPASS);   
-  int i = 0;
-  while (WiFi.status() != WL_CONNECTED) {
-    if(i >= 5){
-     M5.Lcd.fillScreen(BLACK);
-     M5.Lcd.setCursor(55, 80);
-     M5.Lcd.setTextSize(2);
-     M5.Lcd.setTextColor(TFT_RED);
-     M5.Lcd.println("WIFI NOT CONNECTED");
-    }
-    delay(1000);
-    i++;
-  }
-  pinMode(21, OUTPUT);
-  digitalWrite(21, LOW);
+  M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)lnbits_map);
   
+  WiFi.begin(wifiSSID, wifiPASS);   
+  while (WiFi.status() != WL_CONNECTED) {
+  }
+  
+  pinMode(21, OUTPUT);
 }
 
 void loop() {
- 
- page_processing();
- reqinvoice(nosats);
- page_qrdisplay(payreq);
- checkpayment();
- int counta = 0;
- while (settle != true){
-   checkpayment();
-   key_val = "";
-   inputs = "";
-   if(counta >200){
-    settle = true;
-   }
-   counta++;
-   delay(1000);
-  } 
-  digitalWrite(21, HIGH);
-  delay(10000);
-  digitalWrite(21, LOW);
-}
 
-
-/**
- * Request an invoice
- */
-void reqinvoice(String value){
-
-  String payload;
-  HTTPClient http;
-  http.begin(api_endpoint + invoice_create_endpoint + "?fields=payment_request,id"); //Getting fancy to response size
-  http.addHeader("Content-Type","application/json");
-  http.addHeader("X-Api-Key",api_key);
-  String toPost = "{  \"num_satoshis\" : " + nosats +", \"memo\" :\""+ memo + String(random(1,1000)) + "\"}";
-  int httpCode = http.POST(toPost); //Make the request
+  fetchpayment();
+   page_qrdisplay(payreq);
   
-  if (httpCode > 0) { //Check for the returning code
-      payload = http.getString();
-      Serial.println(payload);
+  checkpayment();
+  while (counta < 1000){
+    if (data_status == "unpaid"){
+      delay(300);
+      checkpayment();
+      counta++;
     }
-  else {
-    Serial.println("Error on HTTP request");
+    else{     
+      M5.Lcd.drawBitmap(0, 0, 320, 240, (uint8_t *)lnbits_map);
+      digitalWrite(21, HIGH);
+      delay(300);
+      digitalWrite(21, LOW);
+      delay(300);
+      counta = 1000;
+    }  
   }
-  http.end(); //Free the resources
+  counta = 0;
 
-  Serial.println(payload);
-
-  
-  const size_t capacity = JSON_OBJECT_SIZE(2) + 500;
-  DynamicJsonDocument doc(capacity);
-  deserializeJson(doc, payload);
-  
-  const char* payment_request = doc["payment_request"]; 
-  const char* id = doc["id"]; 
-  payreq = (String) payment_request;
-  lntx_id = (String) id;
-  Serial.println(payreq);
-  Serial.println(lntx_id);
 }
+
+////////////////////////// GET/POST REQUESTS///////////////////////////////
+
+void fetchpayment(){
+
+ WiFiClientSecure client;
+  
+  if (!client.connect(lnbitshost, httpsPort)) {
+    return;
+  }
+  
+  String topost = "{  \"value\" : \"" + amount +"\", \"memo\" :\""+ description + String(random(1,1000)) + "\"}";
+  String url = "/api/v1/invoices";
+  client.print(String("POST ") + url +" HTTP/1.1\r\n" +
+                "Host: " + lnbitshost + "\r\n" +
+                "User-Agent: ESP32\r\n" +
+                "Grpc-Metadata-macaroon:"+ invoicekey +"\r\n" +
+                "Content-Type: application/json\r\n" +
+                "Connection: close\r\n" +
+                "Content-Length: " + topost.length() + "\r\n" +
+                "\r\n" + 
+                topost + "\n");
+
+
+
+  while (client.connected()) {
+    String line = client.readStringUntil('\n');
+   Serial.println(line);
+    if (line == "\r") {
+      break;
+    }
+  }
+  
+  String line = client.readString();
+
+
+  Serial.println(line);
+  const size_t capacity = JSON_OBJECT_SIZE(2) + 430;
+  DynamicJsonDocument doc(capacity);
+
+  deserializeJson(doc, line);
+  const char* pay_req = doc["pay_req"]; 
+  const char* payment_hash = doc["payment_hash"]; 
+  payreq = pay_req;
+  Serial.println(data_lightning_invoice_payreq);
+  data_id = payment_hash;
+
+}
+
+
 
 
 void checkpayment(){
-  String payload;
-  HTTPClient http;
-  http.begin(api_endpoint + invoice_check_endpoint + lntx_id + "?fields=settled"); //Getting fancy to response size
-  http.addHeader("Content-Type","application/json");
-  http.addHeader("X-Api-Key",api_key);
-  int httpCode = http.GET(); //Make the request
+
+   WiFiClientSecure client;
   
-  if (httpCode > 0) { //Check for the returning code
-      payload = http.getString();
-      Serial.println(payload);
-    }
-  else {
-    Serial.println("Error on HTTP request");
+  if (!client.connect(lnbitshost, httpsPort)) {
+    return;
   }
-  http.end(); //Free the resources
+  String url = "/api/v1/invoice/";
+  client.print(String("GET ") + url + data_id +" HTTP/1.1\r\n" +
+                "Host: " + lnbitshost + "\r\n" +
+                "User-Agent: ESP32\r\n" +
+                "Grpc-Metadata-macaroon:"+ invoicekey +"\r\n" +
+                "Content-Type: application/json\r\n" +
+                "Connection: close\r\n\r\n");
+
+
+   while (client.connected()) {
+    String line = client.readStringUntil('\n');
+   Serial.println(line);
+    if (line == "\r") {
+      break;
+    }
+  }
   
-  const size_t capacity = JSON_OBJECT_SIZE(2) + 500;
+  String line = client.readString();
+  Serial.println(line);
+
+  const size_t capacity = JSON_OBJECT_SIZE(1) + 100;
   DynamicJsonDocument doc(capacity);
-  deserializeJson(doc, payload);
   
-  int settled = doc["settled"]; 
-  Serial.println(settled);
-  if (settled == 1){
-    settle = true;
+  deserializeJson(doc, line);
+  
+  const char* PAID = doc["PAID"];
+
+  String paidd = PAID;
+
+  if (paidd== "FALSE"){
+    data_status = "unpaid";
   }
   else{
-    settle = false;
+    data_status = "paid";
   }
+
+
 }
 
 void page_qrdisplay(String xxx)
 {  
+
   M5.Lcd.fillScreen(BLACK); 
   M5.Lcd.qrcode(payreq,45,0,240,14);
   delay(100);
-}
 
-
-void page_processing()
-{ 
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(40, 80);
-  M5.Lcd.setTextSize(4);
-  M5.Lcd.setTextColor(TFT_WHITE);
-  M5.Lcd.println("PROCESSING");
 }
