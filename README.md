@@ -1,3 +1,5 @@
+<h1 style="color:red">OLD AND BROKEN, GO HERE FOR A NEW VERSION -> <a href="https://github.com/arcbtc/lnrelay">LNRELAY</a> <- </h1>
+
 # M5Stack1.21
 A simple PoS unit for retrofitting any device to accept bitcoin over lightning network.
 <img src="https://i.imgur.com/I8T5QVe.gif" width="100%">
