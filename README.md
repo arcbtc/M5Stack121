@@ -2,7 +2,7 @@
 
 # M5Stack1.21
 A simple PoS unit for retrofitting any device to accept bitcoin over lightning network.
-<img src="https://i.imgur.com/I8T5QVe.gif" width="100%">
+
 
 [![video demo](https://i.imgur.com/H8N0Lsr.png)](https://www.youtube.com/watch?v=3J7pTht4Ig8)
 
